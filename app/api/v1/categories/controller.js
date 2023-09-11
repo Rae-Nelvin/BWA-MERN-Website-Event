@@ -1,11 +1,17 @@
-const Categories = require("./model");
+const { StatusCodes } = require("http-status-codes");
+const {
+  getAllCategories,
+  createCategory,
+  getOneCategory,
+  updateCategory,
+  deleteCategory,
+} = require("../../../services/mongoose/categories");
 
 const create = async (req, res, next) => {
   try {
-    const { name } = req.body;
-    const category = new Categories({ name });
-    await category.save();
-    res.status(201).json({ category });
+    const result = await createCategory(req);
+
+    res.status(StatusCodes.CREATED).json({ result });
   } catch (error) {
     next(error);
   }
@@ -13,8 +19,9 @@ const create = async (req, res, next) => {
 
 const index = async (req, res, next) => {
   try {
-    const categories = await Categories.find().select("_id name");
-    res.status(200).json({ categories });
+    const result = await getAllCategories();
+
+    res.status(StatusCodes.OK).json({ result });
   } catch (error) {
     next(error);
   }
@@ -22,13 +29,9 @@ const index = async (req, res, next) => {
 
 const find = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const result = await Categories.findOne({ _id: id });
-    if (!result) {
-      return res.status(404).json({ message: "Category not found" });
-    }
+    const result = await getOneCategory(req);
 
-    res.status(200).json({ result });
+    res.status(StatusCodes.OK).json({ result });
   } catch (error) {
     next(error);
   }
@@ -36,19 +39,9 @@ const find = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { name } = req.body;
+    const result = await updateCategory(req);
 
-    const result = await Categories.findByIdAndUpdate(
-      { _id: id },
-      { name },
-      { new: true, runValidators: true }
-    );
-    if (!result) {
-      return res.status(404).json({ message: "Category not found" });
-    }
-
-    res.status(200).json({ result });
+    res.status(StatusCodes.OK).json({ result });
   } catch (error) {
     next(error);
   }
@@ -56,14 +49,9 @@ const update = async (req, res, next) => {
 
 const destroy = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const result = await deleteCategory(req);
 
-    const result = await Categories.findByIdAndRemove(id);
-    if (!result) {
-      return res.status(404).json({ message: "Category not found" });
-    }
-
-    res.status(200).json({ result });
+    res.status(StatusCodes.OK).json({ result });
   } catch (error) {
     next(error);
   }
