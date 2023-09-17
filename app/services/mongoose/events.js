@@ -119,6 +119,9 @@ const updateEvent = async (req) => {
   await checkingImage(image);
   await checkingCategory(category);
   await checkingTalent(talent);
+  const checkEvent = await Events.findOne({ _id: id });
+  if (!checkEvent) throw new NotFoundError("Event not found");
+
   const check = await Events.findOne({ title, _id: { $ne: id } });
   if (check) throw new BadRequestError("Title already exist");
 
@@ -147,6 +150,7 @@ const updateEvent = async (req) => {
 const deleteEvent = async (req) => {
   const { id } = req.params;
   const result = await Events.findOneAndDelete({ _id: id });
+  if (!result) throw new NotFoundError("Event not found");
 
   return result;
 };
