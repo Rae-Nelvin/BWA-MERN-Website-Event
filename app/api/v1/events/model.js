@@ -39,7 +39,7 @@ let eventSchema = new mongoose.Schema(
     about: {
       type: String,
     },
-    tagLine: {
+    tagline: {
       type: String,
       required: [true, "Tagline is required"],
     },
@@ -72,6 +72,11 @@ let eventSchema = new mongoose.Schema(
     talent: {
       type: mongoose.Types.ObjectId,
       ref: "Talent",
+      required: true,
+    },
+    organizer: {
+      type: mongoose.Types.ObjectId,
+      ref: "Organizer",
       required: true,
     },
   },
