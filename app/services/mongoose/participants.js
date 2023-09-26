@@ -1,7 +1,7 @@
 const Participant = require("../../api/v1/participants/model");
 const Event = require("../../api/v1/events/model");
 const Order = require("../../api/v1/orders/model");
-// const Payments = require("../../api/v1/payments/model");
+const Payment = require("../../api/v1/payments/model");
 
 const {
   BadRequestError,
@@ -130,13 +130,57 @@ const checkoutOrder = async (req) => {
     throw new NotFoundError("Event not found");
   }
 
-  //   const checkingPayment = await Payment;
-};
+  const checkingPayment = await Payment.findOne({ _id: payment });
+  if (!checkingPayment) {
+    throw new NotFoundError("Payment not found");
+  }
 
-// const getAllPaymentByOrganizer = async (req) => {
-//     const { organizer } = req.params;
-//     const result = await Payment
-// }
+  let totalPay = 0,
+    totalOrderTicket = 0;
+  await tickets.forEach((tic) => {
+    checkingEvent.tickets.forEach((ticket) => {
+      if (tic.ticketCategories.type === ticket.type) {
+        if (tic.sumTicket > ticket.stock) {
+          throw new BadRequestError("Stock is not enough");
+        } else {
+          ticket.stock -= tic.sumTicket;
+          totalOrderTicket += tic.sumTicket;
+          totalPay += tic.ticketCategories.price * tic.sumTicket;
+        }
+      }
+    });
+  });
+  await checkingEvent.save();
+
+  const historyEvent = {
+    title: checkingEvent.title,
+    date: checkingEvent.date,
+    about: checkingEvent.about,
+    tagline: checkingEvent.tagline,
+    keyPoint: checkingEvent.keyPoint,
+    venueName: checkingEvent.venueName,
+    tickets: tickets,
+    image: checkingEvent.image,
+    category: checkingEvent.category,
+    talent: checkingEvent.talent,
+    organizer: checkingEvent.organizer,
+  };
+
+  const result = new Order({
+    date: new Date(),
+    personalDetail: personalDetail,
+    totalPay,
+    totalOrderTicket,
+    orderItems: tickets,
+    participant: req.participant.id,
+    event,
+    historyEvent,
+    payment,
+  });
+
+  await result.save();
+  return result;
+};
 
 module.exports = {
   signupParticipant,
@@ -145,4 +189,5 @@ module.exports = {
   getAllEvents,
   getOneEvent,
   getAllOrders,
+  checkoutOrder,
 };
